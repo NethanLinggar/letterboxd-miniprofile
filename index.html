@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letterboxd MiniProfile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-serif: 'Source Serif 4', Georgia, serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            height: fit-content;
+            width: fit-content;
+        }
+        .profile-card {
+            background: #181c20;
+            border-radius: 8px;
+            padding: 12px;
+            width: 308px;
+            color: #fff;
+            font-family: var(--font-sans);
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            outline: 1px solid #667788;
+            transition: outline 0.1s ease-in-out;
+        }
+        .avatar:hover {
+            outline: 2px solid #667788;
+        }
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10px;
+        }
+        .user-info a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .user-info a:hover {
+            color: #40BCF4;
+        }
+        .username {
+            font-weight: 900;
+            font-size: 22px;
+        }
+        .user-stats {
+            color: #667788;
+        }
+        .user-stats a {
+            padding-top: 4px;
+            font-size: 12px;
+            text-decoration: none;
+            color: #667788;
+            font-weight: lighter;
+        }
+        .user-stats a:hover {
+            color: #bbccdd;
+        }
+        .column {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 10px 0;
+        }
+        .stat-column {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .stat-column a {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            text-decoration: none;
+        }
+        .stat-column a:hover {
+            color: #40BCF4;
+        }
+        .stat-column:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 30%;
+            height: 60%;
+            width: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .stat-number {
+            color: #fff;
+            font-family: var(--font-serif);
+            font-size: 1.2em;
+            font-weight: 900;
+        }
+        .stat-title {
+            font-size: 10px;
+            color: #667788;
+        }
+        .stat-column:hover .stat-title {
+            color: #40BCF4;
+        }
+        .favorites-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .favorites-title {
+            font-size: 10px;
+            letter-spacing: 2px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            width: 97%;
+            text-align: left;
+        }
+        .favorites {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            width: 100%;
+        }
+        .favorites img {
+            width: 48%;
+            border-radius: 3px;
+            object-fit: cover;
+            height: 100px;
+            transition: outline 0.1s ease-in-out;
+            cursor: pointer;
+        }
+        .favorites img:hover {
+            outline: 2px solid #00E054;
+        }
+    </style>
+</head>
+<body>
+<div id="profile" class="profile-card">
+    <p class="loading">Loading...</p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('user') || 'nolan';
+    const type = urlParams.get('type') || 'basic';
+
+    fetch(`https://letterboxd-miniprofile-cors.vercel.app/${username}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById("profile").innerHTML = `<p>Error: ${data.error}</p>`;
+            return;
+        }
+        displayProfile(data);
+    })
+    .catch(error => {
+        console.error("Fetch failed:", error);
+        document.getElementById("profile").innerHTML = `<p>Failed to load profile. Please try again.</p>`;
+    });
+
+    function displayProfile(data) {
+        let profileHTML = `
+            <div class="profile-header">
+                <img class="avatar" src="${data.avatar}" alt="Avatar" 
+                    onclick="window.open('https://letterboxd.com/${username}/', '_blank')">
+                <div class="user-info">
+                    <div>
+                        <a href="https://letterboxd.com/${username}/" target="_blank" class="username">
+                            ${data.display_name || username}
+                        </a>
+                    </div>
+                    <div class="user-stats">
+                        <a href="https://letterboxd.com/${username}/followers" target="_blank">${data.followers || '0'} followers</a>,
+                        <a href="https://letterboxd.com/${username}/following" target="_blank">${data.following || '0'} following</a>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="stat-column">
+                    <a href="https://letterboxd.com/${username}/films" target="_blank">
+                        <div class="stat-number">${data.films_watched}</div>
+                        <div class="stat-title">FILMS</div>
+                    </a>
+                </div>
+                <div class="stat-column">
+                    <a href="https://letterboxd.com/${username}/films/diary/for/2025" target="_blank">
+                        <div class="stat-number">${data.this_year}</div>
+                        <div class="stat-title">THIS YEAR</div>
+                    </a>
+                </div>
+                <div class="stat-column">
+                    <a href="https://letterboxd.com/${username}/lists" target="_blank">
+                        <div class="stat-number">${data.lists}</div>
+                        <div class="stat-title">LISTS</div>
+                    </a>
+                </div>
+            </div>
+        `;
+
+        if (type === 'favorites' && data.favorites && data.favorites.length > 0) {
+            profileHTML += `<div class="favorites-container">
+                <div class="favorites-title">FAVORITE FILMS</div>
+                <div class="favorites">`;
+            
+            data.favorites.forEach(movie => {
+                profileHTML += `
+                    <img src="${movie.poster}" alt="${movie.name}" title="${movie.name}" 
+                         onclick="window.open('https://letterboxd.com/film/${movie.slug}', '_blank')">
+                `;
+            });
+
+            profileHTML += `</div></div>`;
+        }
+
+        document.getElementById("profile").innerHTML = profileHTML;
+    }
+});
+</script>
+</body>
+</html>
